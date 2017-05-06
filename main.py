@@ -30,6 +30,7 @@ def enhance(combine):
     enhance_family_size(combine)
     enhance_is_alone(combine)
     enhance_age_class(combine)
+    enhance_embarked(combine)
 
 def create_title(combine):
     for dataset in combine:
@@ -94,6 +95,11 @@ def enhance_age_class(combine):
     for dataset in combine:
         dataset['Age*Class'] = dataset.Age * dataset.Pclass
 
+def enhance_embarked(combine):
+    freq_port = combine[0].Embarked.dropna().mode()[0]
+    for dataset in combine:
+        dataset['Embarked'] = dataset['Embarked'].fillna(freq_port)
+        dataset['Embarked'] = dataset['Embarked'].map( {'S': 0, 'C': 1, 'Q': 2} ).astype(int)
 def main():
     train_df = pd.read_csv('./data/train.csv')
     test_df = pd.read_csv('./data/test.csv')
