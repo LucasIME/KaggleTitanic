@@ -27,6 +27,7 @@ def enhance(combine):
     create_title(combine)
     enhance_sex(combine)
     enhance_age(combine)
+    enhance_family_size(combine)
 
 def create_title(combine):
     for dataset in combine:
@@ -77,6 +78,10 @@ def enhance_age(combine):
         dataset.loc[ dataset['Age'] > 64, 'Age']
 
     combine[0] = combine[0].drop(['AgeBand'], axis=1)
+
+def enhance_family_size():
+    for dataset in combine:
+        dataset['FamilySize'] = dataset['SibSp'] + dataset['Parch'] + 1
 
 def main():
     train_df = pd.read_csv('./data/train.csv')
