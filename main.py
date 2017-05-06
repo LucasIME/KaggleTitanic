@@ -18,7 +18,7 @@ from sklearn.linear_model import SGDClassifier
 from sklearn.tree import DecisionTreeClassifier
 
 def drop_unnecessary_features(df):
-    drop_list = ['Ticket', 'Cabin', 'Name', 'PassengerId']
+    drop_list = ['Ticket', 'Cabin', 'Name', 'PassengerId', 'Parch', 'SibSp', 'FamilySize']
     print("Before", df.shape)
     df = df.drop(drop_list, axis=1)
     print("After", df.shape)
@@ -28,6 +28,7 @@ def enhance(combine):
     enhance_sex(combine)
     enhance_age(combine)
     enhance_family_size(combine)
+    enhance_is_alone(combine)
 
 def create_title(combine):
     for dataset in combine:
@@ -79,9 +80,14 @@ def enhance_age(combine):
 
     combine[0] = combine[0].drop(['AgeBand'], axis=1)
 
-def enhance_family_size():
+def enhance_family_size(combine):
     for dataset in combine:
         dataset['FamilySize'] = dataset['SibSp'] + dataset['Parch'] + 1
+
+def enhance_is_alone(combine):
+    for dataset in combine:
+        dataset['IsAlone'] = 0
+        dataset.loc[dataset['FamilzySize'] == 1, 'IsAlone'] = 1
 
 def main():
     train_df = pd.read_csv('./data/train.csv')
