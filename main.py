@@ -31,6 +31,7 @@ def enhance(combine):
     enhance_is_alone(combine)
     enhance_age_class(combine)
     enhance_embarked(combine)
+    enhance_fare(combine)
 
 def create_title(combine):
     for dataset in combine:
@@ -99,7 +100,20 @@ def enhance_embarked(combine):
     freq_port = combine[0].Embarked.dropna().mode()[0]
     for dataset in combine:
         dataset['Embarked'] = dataset['Embarked'].fillna(freq_port)
-        dataset['Embarked'] = dataset['Embarked'].map( {'S': 0, 'C': 1, 'Q': 2} ).astype(int)
+        dataset['Embarked'] = dataset['Embarked'].map({'S': 0, 'C': 1, 'Q': 2}).astype(int)
+    
+def enhance_fare(combine):
+    combine[0]['FareBand'] = pd.qcut(combine[0]['Fare'], 4)
+
+    for dataset in combine:
+        dataset.loc[ dataset['Fare'] <= 7.91, 'Fare'] = 0
+        dataset.loc[(dataset['Fare'] > 7.91) & (dataset['Fare'] <= 14.454), 'Fare'] = 1
+        dataset.loc[(dataset['Fare'] > 14.454) & (dataset['Fare'] <= 31), 'Fare']   = 2
+        dataset.loc[ dataset['Fare'] > 31, 'Fare'] = 3
+        dataset['Fare'] = dataset['Fare'].astype(int)
+
+    combine[0] = combine[0].drop(['FareBand'], axis=1)
+
 def main():
     train_df = pd.read_csv('./data/train.csv')
     test_df = pd.read_csv('./data/test.csv')
