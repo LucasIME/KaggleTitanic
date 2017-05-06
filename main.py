@@ -29,6 +29,7 @@ def enhance(combine):
     enhance_age(combine)
     enhance_family_size(combine)
     enhance_is_alone(combine)
+    enhance_age_class(combine)
 
 def create_title(combine):
     for dataset in combine:
@@ -88,6 +89,10 @@ def enhance_is_alone(combine):
     for dataset in combine:
         dataset['IsAlone'] = 0
         dataset.loc[dataset['FamilzySize'] == 1, 'IsAlone'] = 1
+
+def enhance_age_class(combine):
+    for dataset in combine:
+        dataset['Age*Class'] = dataset.Age * dataset.Pclass
 
 def main():
     train_df = pd.read_csv('./data/train.csv')
