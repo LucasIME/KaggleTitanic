@@ -90,7 +90,7 @@ def enhance_family_size(combine):
 def enhance_is_alone(combine):
     for dataset in combine:
         dataset['IsAlone'] = 0
-        dataset.loc[dataset['FamilzySize'] == 1, 'IsAlone'] = 1
+        dataset.loc[dataset['FamilySize'] == 1, 'IsAlone'] = 1
 
 def enhance_age_class(combine):
     for dataset in combine:
@@ -103,6 +103,7 @@ def enhance_embarked(combine):
         dataset['Embarked'] = dataset['Embarked'].map({'S': 0, 'C': 1, 'Q': 2}).astype(int)
     
 def enhance_fare(combine):
+    combine[0]['Fare'].fillna(combine[0]['Fare'].dropna().median(), inplace=True)
     combine[0]['FareBand'] = pd.qcut(combine[0]['Fare'], 4)
 
     for dataset in combine:
@@ -114,6 +115,25 @@ def enhance_fare(combine):
 
     combine[0] = combine[0].drop(['FareBand'], axis=1)
 
+def solve(train_df, test_df):
+    X_train = train_df.drop("Survived", axis=1)
+    Y_train = train_df["Survived"]
+    X_test  = test_df.drop("PassengerId", axis=1).copy()
+    X_train.shape, Y_train.shape, X_test.shape
+
+    # Random Forest
+    random_forest = RandomForestClassifier(n_estimators=100)
+    random_forest.fit(X_train, Y_train)
+    Y_pred = random_forest.predict(X_test)
+    random_forest.score(X_train, Y_train)
+    acc_random_forest = round(random_forest.score(X_train, Y_train) * 100, 2)
+
+    submission = pd.DataFrame({
+        "PassengerId": test_df["PassengerId"],
+        "Survived": Y_pred
+    })
+    submission.to_csv('./data/submission.csv', index=False)
+
 def main():
     train_df = pd.read_csv('./data/train.csv')
     test_df = pd.read_csv('./data/test.csv')
@@ -122,9 +142,11 @@ def main():
 
     enhance(combine)
 
-    drop_unnecessary_features(train_df)
-    drop_unnecessary_features(test_df)
+    train_df.drop(['Ticket', 'Cabin', 'Name', 'PassengerId', 'Parch', 'SibSp', 'FamilySize'], axis=1)
+    test_df.drop(['Ticket', 'Cabin', 'Name', 'Parch', 'SibSp', 'FamilySize'], axis=1)
 
     combine = [train_df, test_df]
+
+    solve(train_df, test_df)
 
 main()
