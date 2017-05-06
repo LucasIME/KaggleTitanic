@@ -55,10 +55,6 @@ def enhance_age(combine):
                 guess_df = dataset[(dataset['Sex'] == i) & \
                                     (dataset['Pclass'] == j+1)]['Age'].dropna()
 
-                # age_mean = guess_df.mean()
-                # age_std = guess_df.std()
-                # age_guess = rnd.uniform(age_mean - age_std, age_mean + age_std)
-
                 age_guess = guess_df.median()
 
                 # Convert random age float to nearest .5 age
@@ -86,7 +82,6 @@ def enhance_age(combine):
 def enhance_family_size(combine):
     for dataset in combine:
         dataset['FamilySize'] = dataset['SibSp'] + dataset['Parch'] + 1
-
 def enhance_is_alone(combine):
     for dataset in combine:
         dataset['IsAlone'] = 0
@@ -103,7 +98,8 @@ def enhance_embarked(combine):
         dataset['Embarked'] = dataset['Embarked'].map({'S': 0, 'C': 1, 'Q': 2}).astype(int)
     
 def enhance_fare(combine):
-    combine[0]['Fare'].fillna(combine[0]['Fare'].dropna().median(), inplace=True)
+    combine[1]['Fare'].fillna(combine[0]['Fare'].dropna().median(), inplace=True)
+    
     combine[0]['FareBand'] = pd.qcut(combine[0]['Fare'], 4)
 
     for dataset in combine:
@@ -119,7 +115,6 @@ def solve(train_df, test_df):
     X_train = train_df.drop("Survived", axis=1)
     Y_train = train_df["Survived"]
     X_test  = test_df.drop("PassengerId", axis=1).copy()
-    X_train.shape, Y_train.shape, X_test.shape
 
     # Random Forest
     random_forest = RandomForestClassifier(n_estimators=100)
@@ -127,6 +122,7 @@ def solve(train_df, test_df):
     Y_pred = random_forest.predict(X_test)
     random_forest.score(X_train, Y_train)
     acc_random_forest = round(random_forest.score(X_train, Y_train) * 100, 2)
+    acc_random_forest
 
     submission = pd.DataFrame({
         "PassengerId": test_df["PassengerId"],
@@ -142,10 +138,11 @@ def main():
 
     enhance(combine)
 
-    train_df.drop(['Ticket', 'Cabin', 'Name', 'PassengerId', 'Parch', 'SibSp', 'FamilySize'], axis=1)
-    test_df.drop(['Ticket', 'Cabin', 'Name', 'Parch', 'SibSp', 'FamilySize'], axis=1)
+    train_df = combine[0]
+    test_df = combine[1]
 
-    combine = [train_df, test_df]
+    train_df = train_df.drop(['Ticket', 'Cabin', 'Name', 'PassengerId', 'Parch', 'SibSp', 'FamilySize'], axis=1)
+    test_df = test_df.drop(['Ticket', 'Cabin', 'Name', 'Parch', 'SibSp', 'FamilySize'], axis=1)
 
     solve(train_df, test_df)
 
