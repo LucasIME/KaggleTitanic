@@ -18,11 +18,15 @@ from sklearn.linear_model import SGDClassifier
 from sklearn.tree import DecisionTreeClassifier
 
 def drop_unnecessary_features(df):
+    drop_list = ['Ticket', 'Cabin', 'Name', 'PassengerId']
     print("Before", df.shape)
-    df = df.drop(['Ticket', 'Cabin'], axis=1)
+    df = df.drop(drop_list, axis=1)
     print("After", df.shape)
 
 def enhance(combine):
+    create_title(combine)
+
+def create_title(combine):
     for dataset in combine:
         dataset['Title'] = dataset.Name.str.extract(' ([A-Za-z]+)\.', expand=False)
 
@@ -30,6 +34,10 @@ def enhance(combine):
     for dataset in combine:
         dataset['Title'] = dataset['Title'].map(title_mapping)
         dataset['Title'] = dataset['Title'].fillna(0)
+
+def enhance_sex(combine):
+    for dataset in combine:
+        dataset['Sex'] = dataset['Sex'].map({'female':1, 'male':0}).astype(int)
 
 def main():
     train_df = pd.read_csv('./data/train.csv')
